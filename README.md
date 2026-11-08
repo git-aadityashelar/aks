@@ -22,5 +22,4 @@ nodes:
         protocol: TCP
 ```  
 
-
-<h2> Test </h2>
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/1.png)
