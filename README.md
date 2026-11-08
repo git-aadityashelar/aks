@@ -1,5 +1,5 @@
 <h2>KIND Cluster Configuration:</h2>
-<code>
+<pre>
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 
@@ -19,6 +19,6 @@ nodes:
       - containerPort: 443
         hostPort: 443
         protocol: TCP
-</code>
+</pre>
 
 <h2> Test </h2>
