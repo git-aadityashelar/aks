@@ -247,7 +247,7 @@ spec:
       - name: acr-secret
 ```
 
-![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/15.png)
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/16.png)
 
 <h4>YAML File to Create Service for notes app</h4>
 
@@ -268,11 +268,154 @@ spec:
 
 ```
 
-![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/16.png)
 ![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/17.png)
 ![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/18.png)
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/19.png)
 
-<h1>A BASIC NOTES APP PROJECT WHERE THE DOCKERFILE IS HOSTED AND FETCHED FROM AZURE CONTAINER REGISTRY AND 
+<h2>A BASIC NOTES APP PROJECT WHERE THE DOCKERFILE IS HOSTED AND FETCHED FROM AZURE CONTAINER REGISTRY AND 
   THE APP IS DEPLOYED USING INGRESS AND RUNNING ON A AZURE VM</h1>
+
+<h3>URL For Notes APP: http://notes-app-demo.westus2.cloudapp.azure.com:8080 /</h3>
+<h3>URL For Nginx App (Ingress path based Routing):  http://notes-app-demo.westus2.cloudapp.azure.com:8080/nginx-app /</h3>
   
+<h4>Creating INGRESS Controller in KIND using YAML</h4>
+
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/21.png)
+
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/22.png)
   
+<h4>notes-app-namespace.yml</h4>
+
+```
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: notes-app-namespace
+```
+
+<h4>notes-app-deployment.yml</h4>
+
+```
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: notes-app-deployment
+  namespace: notes-app-namespace
+  labels:
+    app: notes-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notes-app
+  template:
+    metadata:
+      labels:
+        app: notes-app
+    spec:
+      containers:
+      - name: notes-app-container
+        image: demoregistry123456.azurecr.io/notes-app:v1
+        ports:
+        - containerPort: 8000
+      imagePullSecrets:
+      - name: acr-secret
+```
+
+<h4>notes-app-service.yml</h4>
+
+```
+kind: Service
+apiVersion: v1
+metadata:
+  name: notes-app-service
+  namespace: notes-app-namespace
+spec:
+  selector:
+    app: notes-app
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
+```
+
+<h4>demo-nginx-deployment.yml</h4>
+
+```
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: nginx-deployment
+  namespace: notes-app-namespace
+  labels:
+    app: nginx-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-app
+  template:
+    metadata:
+      labels:
+        app: nginx-app
+    spec:
+      containers:
+      - name: nginx-app-container
+        image: nginx
+        ports:
+        - containerPort: 8000
+      
+```
+
+<h4>nginx-app-service.yml</h4>
+
+```
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-service
+  namespace: notes-app-namespace
+spec:
+  selector:
+    app: nginx-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+```
+
+<h4>ingress.yml</h4>
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-notes-ingress
+  namespace: notes-app-namespace
+  annotations: 
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - pathType: Prefix 
+        path: /nginx
+        backend: 
+          service:
+            name: nginx-service
+            port:
+              number: 80
+      - pathType: Prefix 
+        path: /
+        backend: 
+          service:
+            name: notes-app-service
+            port:
+              number: 8000
+```
+
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/23.png)
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/24.png)
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/25.png)
