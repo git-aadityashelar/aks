@@ -272,8 +272,8 @@ spec:
 ![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/18.png)
 ![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/19.png)
 
-<h2>A BASIC NOTES APP PROJECT WHERE THE DOCKERFILE IS HOSTED AND FETCHED FROM AZURE CONTAINER REGISTRY AND 
-  THE APP IS DEPLOYED USING INGRESS AND RUNNING ON A AZURE VM</h1>
+<h2><u>A BASIC NOTES APP PROJECT WHERE THE DOCKERFILE IS HOSTED AND FETCHED FROM AZURE CONTAINER REGISTRY AND 
+  THE APP IS DEPLOYED USING INGRESS AND RUNNING ON AN AZURE VM</u></h1>
 
 <h3>URL For Notes APP: http://notes-app-demo.westus2.cloudapp.azure.com:8080 /</h3>
 <h3>URL For Nginx App (Ingress path based Routing):  http://notes-app-demo.westus2.cloudapp.azure.com:8080/nginx-app /</h3>
