@@ -36,3 +36,243 @@ metadata:
 ```
 ![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/4.png)
 
+<h4>YAML File to Create POD</h4>
+
+```
+kind: Pod
+apiVersion: v1
+metadata:
+  name: demo-nginx-pod
+  namespace: demo-nginx-namespace
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+
+```
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/5.png)
+
+<h4> YAML File to create Deployment</h4>
+
+```
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: demo-nginx-deployment
+  namespace: demo-nginx-namespace
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: nginx-pod
+  template:
+    metadata:
+      labels:
+        app: nginx-pod
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+```
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/6.png)
+
+<h4> Scale Deployment</h4>
+
+```
+kubectl scale deployment/demo-nginx-deployment -n demo-nginx-namespace --replicas=8
+```
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/7.png)
+
+<h4>PODS Running on different nodes in KIND cluster</h4>
+
+```
+kubectl get pods -n demo-nginx-namespace -o wide
+```
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/8.png)
+
+<h4>Rolling Update</h4>
+
+```
+kubectl set image deployment/demo-nginx-deployment -n demo-nginx-namespace nginx-container=nginx:1.30
+```
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/10.png)
+
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/11.png)
+
+<h4>YAML to create DaemonSet</h4>
+
+```
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: demo-nginx-daemonset
+  namespace: demo-nginx-namespace
+spec:
+  selector:
+    matchLabels:
+      app: nginx-pod
+  template:
+    metadata:
+      labels:
+        app: nginx-pod
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+```
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/12.png)
+
+<h4>YAML to create JOBS</h4>
+
+```
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: demo-job
+  namespace: demo-nginx-namespace
+spec:
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      name: demo-job-pod
+      labels:
+        app: batch-job
+    spec:
+      containers:
+      - name: batch-container
+        image: busybox:latest
+        command: ["sh", "-c", "echo Hello friends!! && sleep 10"]
+      restartPolicy: Never
+```
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/13.png)
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/14.png)
+
+<h4>YAML to create CRON JOBS</h4>
+
+```
+kind: CronJob
+apiVersion: batch/v1
+metadata:
+  name: demo-cron-job
+  namespace: demo-nginx-namespace
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: minute-backup
+        spec:
+          containers: 
+          - name: backup-container
+            image: busybox
+            command:
+            - sh
+            - -c
+            - >
+              echo "Backup Started" &&
+              mkdir -p /backups &&
+              mkdir -p /demo-data &&
+              cp -r /demo-data /backups &&
+              echo "Backup Completed"
+            volumeMounts: 
+            - name: data-volume
+              mountPath: /demo-data
+            - name: backup-volume
+              mountPath: /backups
+          restartPolicy: OnFailure
+          volumes: 
+          - name: data-volume
+            hostPath:
+              path: /demo-data
+              type: DirectoryOrCreate
+          - name: backup-volume
+            hostPath:
+              path: /backups
+              type: DirectoryOrCreate
+
+```
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/15.png)
+
+<h4> BASIC NOTES APP using Deployment and Service</h4>
+<h4>YAML File to Create NameSpace for notes app</h4>
+
+```
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: notes-app-namespace
+```
+<h4>YAML File to Create Deployment for notes app</h4>
+
+```
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: notes-app-namespace
+
+Notes App Deployment:
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: notes-app-deployment
+  namespace: notes-app-namespace
+  labels:
+    app: notes-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notes-app
+  template:
+    metadata:
+      labels:
+        app: notes-app
+    spec:
+      containers:
+      - name: notes-app-container
+        image: demoregistry123456.azurecr.io/notes-app:v1
+        ports:
+        - containerPort: 8000
+      imagePullSecrets:
+      - name: acr-secret
+```
+
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/15.png)
+
+<h4>YAML File to Create Service for notes app</h4>
+
+```
+kind: Service
+apiVersion: v1
+metadata:
+  name: notes-app-service
+  namespace: notes-app-namespace
+spec:
+  selector:
+    app: notes-app
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
+
+```
+
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/16.png)
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/17.png)
+![KindCluster](https://github.com/git-aadityashelar/aks/blob/main/src/images/readmeScreenshots/18.png)
+
+<h1>A BASIC NOTES APP PROJECT WHERE THE DOCKERFILE IS HOSTED AND FETCHED FROM AZURE CONTAINER REGISTRY AND 
+  THE APP IS DEPLOYED USING INGRESS AND RUNNING ON A AZURE VM</h1>
+  
+  
