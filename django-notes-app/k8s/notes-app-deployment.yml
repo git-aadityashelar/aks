@@ -1,0 +1,24 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: notes-app-deployment
+  namespace: notes-app-namespace
+  labels:
+    app: notes-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notes-app
+  template:
+    metadata:
+      labels:
+        app: notes-app
+    spec:
+      containers:
+      - name: notes-app-container
+        image: demoregistry123456.azurecr.io/notes-app:v1
+        ports:
+        - containerPort: 8000
+      imagePullSecrets:
+      - name: acr-secret
